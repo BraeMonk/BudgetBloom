@@ -517,29 +517,33 @@ select:focus {
 }
 
 /* -------------------------------------------
-   MOBILE BOTTOM NAVIGATION
+   MOBILE BOTTOM NAVIGATION + iOS HIDE-ON-SCROLL
 --------------------------------------------*/
 .mobile-nav {
   display: none;
 }
 
 @media (max-width: 880px) {
+
+  /* Bottom nav bar (visible only on mobile) */
   .mobile-nav {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
     height: 62px;
-    background: #ffffffee;
-    backdrop-filter: blur(8px);
+    background: #ffffffee; /* semi-transparent white */
+    backdrop-filter: blur(8px); /* iOS blur effect */
     border-top: 1px solid #e9dccb;
     display: flex;
     justify-content: space-around;
     align-items: center;
     z-index: 9999;
     padding-bottom: env(safe-area-inset-bottom);
+    transition: transform 0.2s ease, opacity 0.2s ease;
   }
 
+  /* Navigation buttons */
   .mobile-nav-item {
     background: none;
     border: none;
@@ -551,6 +555,7 @@ select:focus {
     transition: transform 0.12s ease, background 0.12s ease;
   }
 
+  /* Active tab highlight */
   .mobile-nav-item.active {
     background: #f5ede0;
     box-shadow: 0 3px 6px rgba(160, 130, 90, 0.25);
@@ -561,12 +566,19 @@ select:focus {
     background: #f7f1e7;
   }
 
+  /* This class is added on scroll DOWN (iOS-style hide) */
+  .mobile-nav--hidden {
+    transform: translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+
   /* Hide sidebar on mobile */
   .sidebar {
     display: none;
   }
 
-  /* Add padding to avoid content being hidden behind nav */
+  /* Add room so content isn't covered by nav */
   .main {
     padding-bottom: 90px !important;
   }
