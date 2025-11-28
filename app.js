@@ -59,6 +59,74 @@ document.querySelectorAll(".nav-item").forEach(btn => {
   });
 });
 
+// MOBILE NAV HANDLING
+document.querySelectorAll(".mobile-nav-item").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const view = btn.dataset.view;
+
+    // sync view switching
+    document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+    document.getElementById(`view-${view}`).classList.add("active");
+
+    // sync bottom nav "active" state
+    document.querySelectorAll(".mobile-nav-item").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+
+    // sync sidebar nav active state for consistency
+    document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
+    const sidebarBtn = document.querySelector(`.nav-item[data-view="${view}"]`);
+    if (sidebarBtn) sidebarBtn.classList.add("active");
+  });
+});
+
+// iOS-style hide-on-scroll for mobile bottom nav
+(function () {
+  const mobileNav = document.querySelector(".mobile-nav");
+  if (!mobileNav) return;
+
+  let lastScrollY = window.scrollY;
+  let ticking = false;
+
+  function onScroll() {
+    const current = window.scrollY;
+    const delta = current - lastScrollY;
+    const isMobile = window.matchMedia("(max-width: 880px)").matches;
+
+    if (!isMobile) {
+      // Always show on desktop
+      mobileNav.classList.remove("mobile-nav--hidden");
+      lastScrollY = current;
+      return;
+    }
+
+    // Ignore tiny scroll jitter
+    if (Math.abs(delta) < 8) {
+      lastScrollY = current;
+      return;
+    }
+
+    if (delta > 0 && current > 40) {
+      // Scrolling down & not at very top → hide
+      mobileNav.classList.add("mobile-nav--hidden");
+    } else {
+      // Scrolling up or near top → show
+      mobileNav.classList.remove("mobile-nav--hidden");
+    }
+
+    lastScrollY = current;
+  }
+
+  window.addEventListener("scroll", () => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        onScroll();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+})();
+
 // Onboarding banner
 const banner = document.getElementById("onboarding-banner");
 const dismissOnboardingBtn = document.getElementById("dismiss-onboarding");
