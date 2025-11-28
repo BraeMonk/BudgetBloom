@@ -1,9 +1,12 @@
-{
-  "name": "BudgetBloom",
-  "short_name": "BudgetBloom",
-  "start_url": "index.html",
-  "display": "standalone",
-  "background_color": "#fdf8f1",
-  "theme_color": "#67b68c",
-  "icons": []
-}
+"icons": [
+  {
+    "src": "icon-512.PNG",
+    "sizes": "192x192",
+    "type": "image/png"
+  },
+  {
+    "src": "icon-512.PNG",
+    "sizes": "512x512",
+    "type": "image/png"
+  }
+]
