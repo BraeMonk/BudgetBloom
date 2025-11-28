@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>BudgetBloom – Soft & Cozy Budgeting</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-root">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">🌱</div>
+        <div class="brand-text">
+          <div class="brand-name">BudgetBloom</div>
+          <div class="brand-tagline">Gentle budgeting for real life</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <button class="nav-item active" data-view="dashboard">🏡 Dashboard</button>
+        <button class="nav-item" data-view="budget">📋 Monthly Budget</button>
+        <button class="nav-item" data-view="envelopes">🧺 Envelopes</button>
+        <button class="nav-item" data-view="debts">📉 Debts</button>
+        <button class="nav-item" data-view="goals">🎯 Savings Goals</button>
+        <button class="nav-item" data-view="transactions">🧾 Transactions</button>
+        <button class="nav-item" data-view="settings">⚙️ Settings</button>
+      </nav>
+      <footer class="sidebar-footer">
+        <small>All data is stored privately in your browser.</small>
+      </footer>
+    </aside>
+
+    <main class="main">
+      <section class="top-banner" id="onboarding-banner">
+        <div>
+          <h1>Welcome to BudgetBloom 🌼</h1>
+          <p>Start by entering your monthly income and fixed bills. Then give every dollar a cozy little job.</p>
+        </div>
+        <button class="btn-soft" id="dismiss-onboarding">Got it</button>
+      </section>
+
+      <!-- DASHBOARD -->
+      <section class="view active" id="view-dashboard">
+        <h2 class="view-title">Overview</h2>
+        <div class="grid-3">
+          <div class="card summary-card">
+            <div class="card-header">
+              <span class="card-icon">💰</span>
+              <div>
+                <div class="card-label">Income</div>
+                <div class="card-value" id="dash-income">$0.00</div>
+              </div>
+            </div>
+            <p class="card-sub">Your total monthly take-home income.</p>
+          </div>
+          <div class="card summary-card">
+            <div class="card-header">
+              <span class="card-icon">📆</span>
+              <div>
+                <div class="card-label">Fixed Bills</div>
+                <div class="card-value" id="dash-fixed">$0.00</div>
+              </div>
+            </div>
+            <p class="card-sub">Recurring expenses like rent, phone, subscriptions.</p>
+          </div>
+          <div class="card summary-card">
+            <div class="card-header">
+              <span class="card-icon">🌿</span>
+              <div>
+                <div class="card-label">To Assign</div>
+                <div class="card-value" id="dash-to-assign">$0.00</div>
+              </div>
+            </div>
+            <p class="card-sub">Money left after fixed bills to give to envelopes & goals.</p>
+          </div>
+        </div>
+
+        <div class="grid-2 mt-lg">
+          <div class="card">
+            <h3 class="card-title">Envelope Snapshot</h3>
+            <div id="dash-envelope-list" class="chip-list empty-hint">
+              <p>No envelopes yet. Add some in the Envelopes tab (e.g., Groceries, Fun, Pets).</p>
+            </div>
+          </div>
+          <div class="card">
+            <h3 class="card-title">Debt & Savings Snapshot</h3>
+            <div class="snapshot-row">
+              <div>
+                <div class="mini-label">Total Debt</div>
+                <div class="mini-value" id="dash-debt-total">$0.00</div>
+              </div>
+              <div>
+                <div class="mini-label">Savings Goals</div>
+                <div class="mini-value" id="dash-goal-total">$0.00</div>
+              </div>
+            </div>
+            <div id="dash-progress" class="progress-block">
+              <!-- progress bars injected -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BUDGET -->
+      <section class="view" id="view-budget">
+        <h2 class="view-title">Monthly Budget</h2>
+        <div class="grid-2">
+          <div class="card">
+            <h3 class="card-title">Income</h3>
+            <label class="field-label" for="income-input">Total Monthly Income</label>
+            <input id="income-input" type="number" min="0" step="0.01" placeholder="e.g. 2500" />
+            <p class="field-hint">Net amount you actually receive each month.</p>
+          </div>
+          <div class="card">
+            <h3 class="card-title">Fixed Bills</h3>
+            <div id="fixed-list" class="item-list"></div>
+            <button class="btn-soft full" id="add-fixed">+ Add Fixed Bill</button>
+          </div>
+        </div>
+        <div class="card mt-lg">
+          <h3 class="card-title">Budget Summary</h3>
+          <div class="budget-summary">
+            <div>
+              <div class="mini-label">Income</div>
+              <div class="mini-value" id="budget-income">$0.00</div>
+            </div>
+            <div>
+              <div class="mini-label">Fixed Bills</div>
+              <div class="mini-value" id="budget-fixed">$0.00</div>
+            </div>
+            <div>
+              <div class="mini-label">To Assign</div>
+              <div class="mini-value" id="budget-to-assign">$0.00</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ENVELOPES -->
+      <section class="view" id="view-envelopes">
+        <h2 class="view-title">Envelopes</h2>
+        <div class="card">
+          <h3 class="card-title">Envelope Categories</h3>
+          <p class="field-hint">Give your leftover money jobs (Groceries, Fun, Pets, Savings, etc.).</p>
+          <div id="envelope-list" class="item-list"></div>
+          <button class="btn-soft full" id="add-envelope">+ Add Envelope</button>
+        </div>
+        <div class="card mt-lg">
+          <h3 class="card-title">Envelope Overview</h3>
+          <div id="envelope-overview" class="chip-list empty-hint">
+            <p>No envelopes yet. Add one above to get started.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- DEBTS -->
+      <section class="view" id="view-debts">
+        <h2 class="view-title">Debts</h2>
+        <div class="grid-2">
+          <div class="card">
+            <h3 class="card-title">Debt Accounts</h3>
+            <p class="field-hint">Track balances and minimum payments. Extra payment settings are in Settings.</p>
+            <div id="debt-list" class="item-list"></div>
+            <button class="btn-soft full" id="add-debt">+ Add Debt</button>
+          </div>
+          <div class="card">
+            <h3 class="card-title">Payoff Estimate</h3>
+            <p class="field-hint">Approximate timeline based on your chosen strategy.</p>
+            <div id="debt-estimate" class="estimate-box">
+              <p>Enter debts and set a monthly extra payment in Settings to see an estimate.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- GOALS -->
+      <section class="view" id="view-goals">
+        <h2 class="view-title">Savings Goals</h2>
+        <div class="card">
+          <h3 class="card-title">Goals</h3>
+          <p class="field-hint">Set soft, encouraging goals for the things that matter.</p>
+          <div id="goal-list" class="item-list"></div>
+          <button class="btn-soft full" id="add-goal">+ Add Goal</button>
+        </div>
+        <div class="card mt-lg">
+          <h3 class="card-title">Progress</h3>
+          <div id="goal-progress-list" class="goal-progress-list empty-hint">
+            <p>No goals yet. Add one above to start tracking.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- TRANSACTIONS -->
+      <section class="view" id="view-transactions">
+        <h2 class="view-title">Transactions</h2>
+        <div class="card">
+          <h3 class="card-title">Add Transaction</h3>
+          <div class="grid-4 gap-md">
+            <div>
+              <label class="field-label" for="tx-date">Date</label>
+              <input id="tx-date" type="date" />
+            </div>
+            <div>
+              <label class="field-label" for="tx-desc">Description</label>
+              <input id="tx-desc" type="text" placeholder="Groceries, gas, etc." />
+            </div>
+            <div>
+              <label class="field-label" for="tx-amount">Amount</label>
+              <input id="tx-amount" type="number" step="0.01" />
+            </div>
+            <div>
+              <label class="field-label" for="tx-envelope">Envelope</label>
+              <select id="tx-envelope">
+                <option value="">Uncategorized</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn-soft mt-md" id="add-tx">+ Add Transaction</button>
+        </div>
+        <div class="card mt-lg">
+          <h3 class="card-title">Recent Transactions</h3>
+          <div id="tx-list" class="tx-list empty-hint">
+            <p>No transactions yet.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section class="view" id="view-settings">
+        <h2 class="view-title">Settings & Data</h2>
+        <div class="grid-2">
+          <div class="card">
+            <h3 class="card-title">General</h3>
+            <label class="field-label" for="currency-symbol">Currency Symbol</label>
+            <input id="currency-symbol" type="text" maxlength="3" placeholder="$" />
+            <p class="field-hint">This only changes how values are displayed.</p>
+
+            <label class="field-label mt-md" for="debt-strategy">Debt Strategy</label>
+            <select id="debt-strategy">
+              <option value="snowball">Snowball (smallest balance first)</option>
+              <option value="avalanche">Avalanche (highest rate first)</option>
+            </select>
+
+            <label class="field-label mt-md" for="debt-extra">Monthly Extra Toward Debt</label>
+            <input id="debt-extra" type="number" min="0" step="0.01" placeholder="e.g. 50" />
+            <p class="field-hint">On top of minimums. Used for payoff estimates.</p>
+          </div>
+          <div class="card">
+            <h3 class="card-title">Data</h3>
+            <button class="btn-soft full" id="export-data">⬇️ Export Data</button>
+            <p class="field-hint">Downloads a JSON file with your budget data.</p>
+            <label class="field-label mt-md" for="import-file">Import Data</label>
+            <input id="import-file" type="file" accept="application/json" />
+            <p class="field-hint">Import a previously exported BudgetBloom file.</p>
+            <button class="btn-soft danger full mt-md" id="reset-data">🧹 Reset All Data</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
