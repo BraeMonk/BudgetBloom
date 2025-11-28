@@ -515,3 +515,59 @@ select:focus {
     text-align: left;
   }
 }
+
+/* -------------------------------------------
+   MOBILE BOTTOM NAVIGATION
+--------------------------------------------*/
+.mobile-nav {
+  display: none;
+}
+
+@media (max-width: 880px) {
+  .mobile-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 62px;
+    background: #ffffffee;
+    backdrop-filter: blur(8px);
+    border-top: 1px solid #e9dccb;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 9999;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .mobile-nav-item {
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    padding: 6px;
+    cursor: pointer;
+    border-radius: 14px;
+    color: var(--text-main);
+    transition: transform 0.12s ease, background 0.12s ease;
+  }
+
+  .mobile-nav-item.active {
+    background: #f5ede0;
+    box-shadow: 0 3px 6px rgba(160, 130, 90, 0.25);
+    transform: translateY(-2px);
+  }
+
+  .mobile-nav-item:hover {
+    background: #f7f1e7;
+  }
+
+  /* Hide sidebar on mobile */
+  .sidebar {
+    display: none;
+  }
+
+  /* Add padding to avoid content being hidden behind nav */
+  .main {
+    padding-bottom: 90px !important;
+  }
+}
