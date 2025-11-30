@@ -1,0 +1,52 @@
+
+body {
+  background: #faf3e7;
+  font-family: system-ui;
+}
+
+.card {
+  background: #fffdf9;
+  padding: 16px;
+  margin: 14px;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+}
+
+.garden-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#bloom-garden {
+  width: 130px;
+  height: 170px;
+  transition: transform 0.8s ease-out;
+}
+
+.grow-animate {
+  transform: scale(1.18);
+}
+
+#petal-chart {
+  width: 160px;
+  height: 160px;
+}
+
+.envelope-card {
+  background: #fff8f0;
+  padding: 14px;
+  margin: 10px;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+}
+
+
+/* Garden + Petals */
+#bloom-garden{width:130px;height:170px;transition:transform .8s ease-out;}
+.grow-animate{transform:scale(1.18);}
+#petal-chart{width:160px;height:160px;}
+
+/* Envelope Cards */
+#envelope-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;}
+.envelope-card{background:#fff8f0;padding:14px;border-radius:14px;box-shadow:0 4px 14px rgba(0,0,0,0.1);}
