@@ -325,15 +325,150 @@ function renderDebts() {
   renderDebtEstimate();
 }
 
+// Rough payoff simulation using snowball/avalanche strategy
+function computeDebtPayoffPlan() {
+  const activeDebts = state.debts
+    .filter(d => Number(d.balance) > 0 && Number(d.minimum) >= 0);
+
+  if (!activeDebts.length) return null;
+
+  const strategy = state.settings.debtStrategy || "snowball";
+  const extra = Number(state.settings.debtExtra || 0);
+
+  // Clone so we don't mutate state during simulation
+  const debts = activeDebts.map(d => ({
+    name: d.name || "",
+    balance: Number(d.balance || 0),
+    minimum: Number(d.minimum || 0),
+    rate: Number(d.rate || 0) // APR, e.g. 19.99
+  }));
+
+  const monthlyMinTotal = debts.reduce((acc, d) => acc + d.minimum, 0);
+  const monthlyPaymentTotal = monthlyMinTotal + extra;
+
+  if (monthlyPaymentTotal <= 0) {
+    return {
+      impossible: true,
+      reason: "Monthly payments are zero. Add a minimum or extra payment."
+    };
+  }
+
+  let months = 0;
+  let totalInterest = 0;
+  const maxMonths = 600; // hard cap ~50 years so we don't loop forever
+
+  while (months < maxMonths) {
+    // Check if all paid off
+    const remaining = debts.reduce((acc, d) => acc + Math.max(0, d.balance), 0);
+    if (remaining <= 0.01) break;
+
+    months++;
+
+    // 1) Apply interest
+    debts.forEach(d => {
+      if (d.balance <= 0) return;
+      if (d.rate > 0) {
+        const monthlyRate = d.rate / 100 / 12;
+        const interest = d.balance * monthlyRate;
+        d.balance += interest;
+        totalInterest += interest;
+      }
+    });
+
+    // 2) Sort according to strategy
+    if (strategy === "avalanche") {
+      debts.sort((a, b) => b.rate - a.rate); // highest rate first
+    } else {
+      // snowball (default): smallest balance first
+      debts.sort((a, b) => a.balance - b.balance);
+    }
+
+    // 3) Pay minimums
+    let paymentPool = monthlyPaymentTotal;
+    debts.forEach(d => {
+      if (d.balance <= 0 || paymentPool <= 0) return;
+      const pay = Math.min(d.minimum, d.balance, paymentPool);
+      d.balance -= pay;
+      paymentPool -= pay;
+    });
+
+    // 4) Throw extra at target debts according to strategy
+    debts.forEach(d => {
+      if (d.balance <= 0 || paymentPool <= 0) return;
+      const pay = Math.min(d.balance, paymentPool);
+      d.balance -= pay;
+      paymentPool -= pay;
+    });
+
+    // Safety: if nothing is changing (no minimums + no extra), bail
+    const stillOwing = debts.some(d => d.balance > 0);
+    if (stillOwing && monthlyPaymentTotal <= 0.0001) {
+      return {
+        impossible: true,
+        reason: "Payments are too small to ever pay off these debts."
+      };
+    }
+  }
+
+  const remaining = debts.reduce((acc, d) => acc + Math.max(0, d.balance), 0);
+
+  if (remaining > 0.01) {
+    return {
+      impossible: true,
+      reason: "At your current payments, payoff would take more than 50 years."
+    };
+  }
+
+  return {
+    months,
+    years: months / 12,
+    totalInterest
+  };
+}
+
 function renderDebtEstimate() {
   if (!state.debts.length) {
     debtEstimateEl.textContent = "No debts to estimate yet.";
     return;
   }
+
   const totalBalance = sum(state.debts, "balance");
+  const plan = computeDebtPayoffPlan();
+
+  // No minimums / no extra / nothing to simulate
+  if (!plan) {
+    debtEstimateEl.innerHTML = `
+      <p>Total debt: <strong>${formatCurrency(totalBalance)}</strong></p>
+      <p>Add minimum payments and (optionally) an extra payment to see an estimated payoff timeline.</p>
+    `;
+    return;
+  }
+
+  if (plan.impossible) {
+    debtEstimateEl.innerHTML = `
+      <p>Total debt: <strong>${formatCurrency(totalBalance)}</strong></p>
+      <p>${plan.reason}</p>
+      <p class="field-hint">Try increasing your extra payment in Settings, or raising minimums for at least one debt.</p>
+    `;
+    return;
+  }
+
+  const months = plan.months;
+  const years = plan.years;
+  const interest = plan.totalInterest;
+
+  const yearsText = years >= 1
+    ? `${years.toFixed(1)} years (${months} months)`
+    : `${months} months`;
+
+  const strategyLabel =
+    (state.settings.debtStrategy === "avalanche" ? "Avalanche (highest rate first)" : "Snowball (smallest balance first)");
+
   debtEstimateEl.innerHTML = `
     <p>Total debt: <strong>${formatCurrency(totalBalance)}</strong></p>
-    <p>Use your chosen strategy and extra payment to create a payoff plan.</p>
+    <p>With your current minimums and extra payment, your <strong>${strategyLabel}</strong> plan could pay everything off in about <strong>${yearsText}</strong>.</p>
+    <p class="field-hint">Rough estimate only. Actual payoff will vary based on real-world interest, fees, and changes to your payments.</p>
+    <p class="field-hint">Estimated interest over the journey: <strong>${formatCurrency(interest)}</strong>.</p>
   `;
 }
 
