@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>BudgetBloom – Soft & Cozy Budgeting</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-root">
+    <!-- Sidebar / Desktop Nav -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">🌱</div>
+        <div class="brand-text">
+          <div class="brand-name">BudgetBloom</div>
+          <div class="brand-tagline">Soft, cozy money clarity.</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item active" data-view="dashboard">🏡 Overview</button>
+        <button class="nav-item" data-view="budget">📋 Budget</button>
+        <button class="nav-item" data-view="envelopes">🧺 Envelopes</button>
+        <button class="nav-item" data-view="debts">📉 Debts</button>
+        <button class="nav-item" data-view="goals">🎯 Savings Goals</button>
+        <button class="nav-item" data-view="transactions">🧾 Transactions</button>
+        <button class="nav-item" data-view="settings">⚙️ Settings</button>
+      </nav>
+
+      <footer class="sidebar-footer">
+        <small>All data stays privately in your browser.</small>
+      </footer>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main">
+      <!-- Onboarding banner -->
+      <section class="top-banner" id="onboarding-banner">
+        <div>
+          <h1>Welcome to BudgetBloom 🌼</h1>
+          <p>Start with your monthly income and fixed bills, then give every dollar a cozy little job.</p>
+        </div>
+        <button class="btn-soft" id="dismiss-onboarding">Got it</button>
+      </section>
+
+      <!-- DASHBOARD -->
+      <section class="view active" id="view-dashboard">
+        <h2 class="view-title">Overview</h2>
+
+        <div class="grid-3">
+          <div class="card summary-card">
+            <div class="card-header">
+              <span class="card-icon">💰</span>
+              <div>
+                <div class="card-label">Income</div>
+                <div class="card-value" id="dash-income">$0.00</div>
+              </div>
+            </div>
+            <p class="card-sub">Your monthly take-home income.</p>
+          </div>
+
+          <div class="card summary-card">
+            <div class="card-header">
+              <span class="card-icon">📆</span>
+              <div>
+                <div class="card-label">Fixed Bills</div>
+                <div class="card-value" id="dash-fixed">$0.00</div>
+              </div>
+            </div>
+            <p class="card-sub">Total of your recurring fixed bills.</p>
+          </div>
+
+          <div class="card summary-card">
+            <div class="card-header">
+              <span class="card-icon">🍃</span>
+              <div>
+                <div class="card-label">To Assign</div>
+                <div class="card-value" id="dash-to-assign">$0.00</div>
+              </div>
+            </div>
+            <p class="card-sub">What’s left to give a job to.</p>
+          </div>
+        </div>
+
+        <div class="grid-2 mt-lg">
+          <div class="card">
+            <h3 class="card-title">Envelope Snapshot</h3>
+            <div id="dash-envelope-list" class="chip-list empty-hint">
+              <p>No envelopes yet. Add some in the Envelopes tab.</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">Debt & Savings Snapshot</h3>
+            <ul class="snapshot-list">
+              <li>
+                <span>Total debt</span>
+                <span id="dash-debt-total">$0.00</span>
+              </li>
+              <li>
+                <span>Total savings goals</span>
+                <span id="dash-goal-total">$0.00</span>
+              </li>
+            </ul>
+            <div id="dash-progress"></div>
+          </div>
+        </div>
+
+        <!-- Bloom Garden + Petals -->
+        <div class="grid-2 mt-lg">
+          <!-- Bloom Garden -->
+          <div class="card garden-card">
+            <h3 class="card-title">Bloom Garden 🌱</h3>
+            <div class="garden-wrapper">
+              <svg id="bloom-garden" viewBox="0 0 120 160" aria-hidden="true"></svg>
+              <p id="garden-caption" class="field-hint garden-caption">
+                Add savings goals to start growing your bloom garden.
+              </p>
+            </div>
+          </div>
+
+          <!-- Spending Petals -->
+          <div class="card petal-card">
+            <h3 class="card-title">Spending Petals 🌸</h3>
+            <div class="petal-wrapper">
+              <svg id="petal-chart" viewBox="0 0 160 160" aria-hidden="true"></svg>
+            </div>
+            <p class="field-hint">
+              Each petal is an envelope. Longer petals = more of that envelope’s budget used.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- BUDGET -->
+      <section class="view" id="view-budget">
+        <h2 class="view-title">Monthly Budget</h2>
+        <div class="grid-2">
+          <div class="card">
+            <h3 class="card-title">Income</h3>
+            <label class="field">
+              <span class="field-label">Monthly income</span>
+              <input type="number" id="income-input" step="0.01" />
+              <span class="field-hint">After tax, what actually hits your account.</span>
+            </label>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title">Quick Summary</h3>
+            <ul class="snapshot-list">
+              <li><span>Income</span><span id="budget-income">$0.00</span></li>
+              <li><span>Fixed bills</span><span id="budget-fixed">$0.00</span></li>
+              <li><span>To assign</span><span id="budget-to-assign">$0.00</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card mt-lg">
+          <div class="card-header">
+            <h3 class="card-title">Fixed Bills</h3>
+            <button class="btn-small" id="add-fixed">+ Add bill</button>
+          </div>
+          <div id="fixed-list" class="list-grid"></div>
+        </div>
+      </section>
+
+      <!-- ENVELOPES -->
+      <section class="view" id="view-envelopes">
+        <h2 class="view-title">Envelopes</h2>
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Envelope Setup</h3>
+            <button class="btn-small" id="add-envelope">+ Add envelope</button>
+          </div>
+          <div id="envelope-list" class="list-grid"></div>
+        </div>
+
+        <div class="card mt-lg">
+          <h3 class="card-title">Envelope Overview</h3>
+          <div id="envelope-overview" class="chip-list empty-hint">
+            <p>No envelopes yet.</p>
+          </div>
+        </div>
+
+        <div class="card mt-lg">
+          <h3 class="card-title">Cozy Envelopes</h3>
+          <p class="field-hint">
+            A soft overview of each envelope. You’ll see how much is spent and how much is left.
+          </p>
+          <div id="envelope-cards" class="envelope-card-grid empty-hint">
+            <p>No envelopes yet. Add one above to see it here.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- DEBTS -->
+      <section class="view" id="view-debts">
+        <h2 class="view-title">Debts</h2>
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Debts</h3>
+            <button class="btn-small" id="add-debt">+ Add debt</button>
+          </div>
+          <div id="debt-list" class="list-grid"></div>
+        </div>
+
+        <div class="card mt-lg">
+          <h3 class="card-title">Debt Snapshot</h3>
+          <div id="debt-estimate" class="field-hint">
+            No debts to estimate yet.
+          </div>
+        </div>
+      </section>
+
+      <!-- GOALS -->
+      <section class="view" id="view-goals">
+        <h2 class="view-title">Savings Goals</h2>
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Goals</h3>
+            <button class="btn-small" id="add-goal">+ Add goal</button>
+          </div>
+          <div id="goal-list" class="list-grid"></div>
+        </div>
+
+        <div class="card mt-lg">
+          <h3 class="card-title">Goal Progress</h3>
+          <div id="goal-progress-list" class="goal-progress-list empty-hint">
+            <p>No goals yet.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- TRANSACTIONS -->
+      <section class="view" id="view-transactions">
+        <h2 class="view-title">Transactions</h2>
+        <div class="card">
+          <h3 class="card-title">Add Transaction</h3>
+          <div class="grid-4">
+            <label class="field">
+              <span class="field-label">Date</span>
+              <input type="date" id="tx-date" />
+            </label>
+            <label class="field">
+              <span class="field-label">Description</span>
+              <input type="text" id="tx-desc" placeholder="Groceries, coffee, etc." />
+            </label>
+            <label class="field">
+              <span class="field-label">Amount</span>
+              <input type="number" id="tx-amount" step="0.01" />
+            </label>
+            <label class="field">
+              <span class="field-label">Envelope</span>
+              <select id="tx-envelope"></select>
+            </label>
+          </div>
+          <button class="btn-primary mt-md" id="add-tx">Add transaction</button>
+        </div>
+
+        <div class="card mt-lg">
+          <h3 class="card-title">Recent Activity</h3>
+          <div id="tx-list" class="tx-list empty-hint">
+            <p>No transactions yet.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section class="view" id="view-settings">
+        <h2 class="view-title">Settings & Data</h2>
+
+        <div class="card">
+          <h3 class="card-title">Display</h3>
+          <label class="field">
+            <span class="field-label">Currency symbol</span>
+            <input type="text" id="currency-symbol" maxlength="3" />
+            <span class="field-hint">Example: $, €, £</span>
+          </label>
+        </div>
+
+        <div class="card mt-lg">
+          <h3 class="card-title">Debt Strategy</h3>
+          <label class="field">
+            <span class="field-label">Payoff preference</span>
+            <select id="debt-strategy">
+              <option value="snowball">Snowball (smallest balance first)</option>
+              <option value="avalanche">Avalanche (highest rate first)</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="field-label">Extra debt payment per month</span>
+            <input type="number" id="debt-extra" step="0.01" />
+          </label>
+        </div>
+
+        <div class="card mt-lg">
+          <h3 class="card-title">Data</h3>
+          <div class="settings-actions">
+            <button class="btn-soft" id="export-data">Export data</button>
+            <label class="btn-soft file-btn">
+              Import data
+              <input type="file" id="import-file" accept="application/json" hidden />
+            </label>
+            <button class="btn-danger" id="reset-data">Reset everything</button>
+          </div>
+          <p class="field-hint">Data is stored in your browser and can be exported as a JSON backup.</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- Mobile bottom nav -->
+    <nav class="mobile-nav">
+      <button class="mobile-nav-item active" data-view="dashboard">🏡</button>
+      <button class="mobile-nav-item" data-view="budget">📋</button>
+      <button class="mobile-nav-item" data-view="envelopes">🧺</button>
+      <button class="mobile-nav-item" data-view="transactions">🧾</button>
+      <button class="mobile-nav-item" data-view="settings">⚙️</button>
+    </nav>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
