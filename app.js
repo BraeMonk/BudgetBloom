@@ -808,3 +808,13 @@ function renderAll() {
 /* Initial render */
 
 renderAll();
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("service-worker.js")
+      .catch(err => {
+        console.log("SW registration failed:", err);
+      });
+  });
+}
