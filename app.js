@@ -1,4 +1,3 @@
-
 const STORAGE_KEY = "budgetbloom_state_v2";
 
 const defaultState = {
@@ -99,7 +98,9 @@ incomeInput.value = state.income || "";
 incomeInput.addEventListener("input", () => {
   state.income = Number(incomeInput.value || 0);
   saveState();
-  renderAll();
+  // Only update summaries, not the whole app
+  renderBudgetSummary();
+  renderDashboard();
 });
 
 const fixedListEl = document.getElementById("fixed-list");
@@ -129,12 +130,15 @@ function renderFixed() {
     nameInput.addEventListener("input", () => {
       state.fixed[index].name = nameInput.value;
       saveState();
-      renderAll();
+      // Changing the name doesn't affect totals; no need to re-render everything
+      renderDashboard();
     });
     amountInput.addEventListener("input", () => {
       state.fixed[index].amount = Number(amountInput.value || 0);
       saveState();
-      renderAll();
+      // Update summaries that depend on fixed bills
+      renderBudgetSummary();
+      renderDashboard();
     });
     removeBtn.addEventListener("click", () => {
       state.fixed.splice(index, 1);
@@ -180,12 +184,18 @@ function renderEnvelopes() {
         state.envelopes[index].name = nameInput.value;
         saveState();
         renderTransactionsEnvelopeOptions();
-        renderAll();
+        // Update views that depend on envelope names
+        renderDashboard();
+        renderEnvelopeCards();
+        renderPetalChart();
       });
       budgetInput.addEventListener("input", () => {
         state.envelopes[index].budget = Number(budgetInput.value || 0);
         saveState();
-        renderAll();
+        // Update envelope visuals and dashboard
+        renderDashboard();
+        renderEnvelopeCards();
+        renderPetalChart();
       });
       removeBtn.addEventListener("click", () => {
         state.envelopes.splice(index, 1);
@@ -266,22 +276,24 @@ function renderDebts() {
       nameInput.addEventListener("input", () => {
         state.debts[index].name = nameInput.value;
         saveState();
-        renderAll();
+        renderDashboard();
+        renderDebtEstimate();
       });
       balanceInput.addEventListener("input", () => {
         state.debts[index].balance = Number(balanceInput.value || 0);
         saveState();
-        renderAll();
+        renderDashboard();
+        renderDebtEstimate();
       });
       minInput.addEventListener("input", () => {
         state.debts[index].minimum = Number(minInput.value || 0);
         saveState();
-        renderAll();
+        renderDebtEstimate();
       });
       rateInput.addEventListener("input", () => {
         state.debts[index].rate = Number(rateInput.value || 0);
         saveState();
-        renderAll();
+        renderDebtEstimate();
       });
 
       removeBtn.addEventListener("click", () => {
@@ -351,17 +363,20 @@ function renderGoals() {
       nameInput.addEventListener("input", () => {
         state.goals[index].name = nameInput.value;
         saveState();
-        renderAll();
+        renderDashboard();
+        renderBloomGarden();
       });
       targetInput.addEventListener("input", () => {
         state.goals[index].target = Number(targetInput.value || 0);
         saveState();
-        renderAll();
+        renderDashboard();
+        renderBloomGarden();
       });
       currentInput.addEventListener("input", () => {
         state.goals[index].current = Number(currentInput.value || 0);
         saveState();
-        renderAll();
+        renderDashboard();
+        renderBloomGarden();
       });
 
       removeBtn.addEventListener("click", () => {
@@ -483,7 +498,13 @@ debtExtraInput.value = state.settings.debtExtra || "";
 currencyInput.addEventListener("input", () => {
   state.settings.currencySymbol = currencyInput.value || "$";
   saveState();
-  renderAll();
+  // Update text that uses currency symbol
+  renderDashboard();
+  renderBudgetSummary();
+  renderTransactions();
+  renderDebtEstimate();
+  renderGoals();
+  renderEnvelopeCards();
 });
 
 debtStrategySelect.addEventListener("change", () => {
@@ -494,6 +515,7 @@ debtStrategySelect.addEventListener("change", () => {
 debtExtraInput.addEventListener("input", () => {
   state.settings.debtExtra = Number(debtExtraInput.value || 0);
   saveState();
+  // Currently only conceptual; no visual calc, so no heavy re-render
 });
 
 document.getElementById("export-data").addEventListener("click", () => {
