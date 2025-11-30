@@ -98,9 +98,9 @@ incomeInput.value = state.income || "";
 incomeInput.addEventListener("input", () => {
   state.income = Number(incomeInput.value || 0);
   saveState();
-  // Only update summaries, not the whole app
   renderBudgetSummary();
   renderDashboard();
+  renderEnvelopeOverview(); // keep envelopes “Still unassigned” live
 });
 
 const fixedListEl = document.getElementById("fixed-list");
@@ -130,15 +130,15 @@ function renderFixed() {
     nameInput.addEventListener("input", () => {
       state.fixed[index].name = nameInput.value;
       saveState();
-      // Changing the name doesn't affect totals; no need to re-render everything
+      // name doesn’t affect totals, just dashboard context
       renderDashboard();
     });
     amountInput.addEventListener("input", () => {
       state.fixed[index].amount = Number(amountInput.value || 0);
       saveState();
-      // Update summaries that depend on fixed bills
       renderBudgetSummary();
       renderDashboard();
+      renderEnvelopeOverview();
     });
     removeBtn.addEventListener("click", () => {
       state.fixed.splice(index, 1);
@@ -184,16 +184,16 @@ function renderEnvelopes() {
         state.envelopes[index].name = nameInput.value;
         saveState();
         renderTransactionsEnvelopeOptions();
-        // Update views that depend on envelope names
         renderDashboard();
+        renderEnvelopeOverview();
         renderEnvelopeCards();
         renderPetalChart();
       });
       budgetInput.addEventListener("input", () => {
         state.envelopes[index].budget = Number(budgetInput.value || 0);
         saveState();
-        // Update envelope visuals and dashboard
         renderDashboard();
+        renderEnvelopeOverview();
         renderEnvelopeCards();
         renderPetalChart();
       });
@@ -209,32 +209,44 @@ function renderEnvelopes() {
     });
   }
 
-  // Overview chips
+  renderEnvelopeOverview();
+  renderEnvelopeCards();
+}
+
+/* Envelope overview (chips + “Still unassigned”) */
+
+function renderEnvelopeOverview() {
   envelopeOverviewEl.innerHTML = "";
+
   if (!state.envelopes.length) {
     envelopeOverviewEl.classList.add("empty-hint");
     envelopeOverviewEl.innerHTML = `<p>No envelopes yet.</p>`;
-  } else {
-    envelopeOverviewEl.classList.remove("empty-hint");
-    let totalBudget = sum(state.envelopes, "budget");
-    state.envelopes.forEach(env => {
-      const chip = document.createElement("div");
-      chip.className = "chip";
-      const available = Number(env.budget || 0) - Number(env.spent || 0);
-      chip.innerHTML = `
-        <span>${env.name || "Unnamed"}</span>
-        <span class="chip-amount">${formatCurrency(available)}</span>
-      `;
-      envelopeOverviewEl.appendChild(chip);
-    });
-    const note = document.createElement("p");
-    note.className = "field-hint";
-    const toAssign = (state.income || 0) - sum(state.fixed, "amount") - totalBudget;
-    note.textContent = `Total assigned to envelopes: ${formatCurrency(totalBudget)} · Still unassigned: ${formatCurrency(toAssign)}`;
-    envelopeOverviewEl.appendChild(note);
+    return;
   }
 
-  renderEnvelopeCards();
+  envelopeOverviewEl.classList.remove("empty-hint");
+
+  const totalBudget = sum(state.envelopes, "budget");
+
+  state.envelopes.forEach(env => {
+    const chip = document.createElement("div");
+    chip.className = "chip";
+    const available = Number(env.budget || 0) - Number(env.spent || 0);
+    chip.innerHTML = `
+      <span>${env.name || "Unnamed"}</span>
+      <span class="chip-amount">${formatCurrency(available)}</span>
+    `;
+    envelopeOverviewEl.appendChild(chip);
+  });
+
+  const note = document.createElement("p");
+  note.className = "field-hint";
+  const toAssign =
+    (state.income || 0) - sum(state.fixed, "amount") - totalBudget;
+  note.textContent =
+    `Total assigned to envelopes: ${formatCurrency(totalBudget)} · ` +
+    `Still unassigned: ${formatCurrency(toAssign)}`;
+  envelopeOverviewEl.appendChild(note);
 }
 
 /* Debts */
@@ -365,18 +377,21 @@ function renderGoals() {
         saveState();
         renderDashboard();
         renderBloomGarden();
+        renderGoalProgressOnly();
       });
       targetInput.addEventListener("input", () => {
         state.goals[index].target = Number(targetInput.value || 0);
         saveState();
         renderDashboard();
         renderBloomGarden();
+        renderGoalProgressOnly();
       });
       currentInput.addEventListener("input", () => {
         state.goals[index].current = Number(currentInput.value || 0);
         saveState();
         renderDashboard();
         renderBloomGarden();
+        renderGoalProgressOnly();
       });
 
       removeBtn.addEventListener("click", () => {
@@ -393,6 +408,13 @@ function renderGoals() {
     });
   }
 
+  // Keep the progress card in sync too
+  renderGoalProgressOnly();
+}
+
+/* Only update the “Goal Progress” card */
+
+function renderGoalProgressOnly() {
   goalProgressListEl.innerHTML = "";
   if (!state.goals.length) {
     goalProgressListEl.classList.add("empty-hint");
@@ -498,12 +520,13 @@ debtExtraInput.value = state.settings.debtExtra || "";
 currencyInput.addEventListener("input", () => {
   state.settings.currencySymbol = currencyInput.value || "$";
   saveState();
-  // Update text that uses currency symbol
+  // Update all money displays
   renderDashboard();
   renderBudgetSummary();
   renderTransactions();
   renderDebtEstimate();
-  renderGoals();
+  renderGoalProgressOnly();
+  renderEnvelopeOverview();
   renderEnvelopeCards();
 });
 
@@ -515,42 +538,6 @@ debtStrategySelect.addEventListener("change", () => {
 debtExtraInput.addEventListener("input", () => {
   state.settings.debtExtra = Number(debtExtraInput.value || 0);
   saveState();
-  // Currently only conceptual; no visual calc, so no heavy re-render
-});
-
-document.getElementById("export-data").addEventListener("click", () => {
-  const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "budgetbloom-data.json";
-  a.click();
-  URL.revokeObjectURL(url);
-});
-
-document.getElementById("import-file").addEventListener("change", ev => {
-  const file = ev.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const imported = JSON.parse(e.target.result);
-      state = Object.assign(structuredClone(defaultState), imported);
-      saveState();
-      location.reload();
-    } catch (err) {
-      console.error("Import error", err);
-      alert("Could not import file. Please ensure it's a valid BudgetBloom JSON export.");
-    }
-  };
-  reader.readAsText(file);
-});
-
-document.getElementById("reset-data").addEventListener("click", () => {
-  if (!confirm("This will clear all BudgetBloom data on this device. Continue?")) return;
-  localStorage.removeItem(STORAGE_KEY);
-  state = structuredClone(defaultState);
-  location.reload();
 });
 
 /* DASHBOARD & SUMMARY */
