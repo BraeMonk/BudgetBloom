@@ -540,6 +540,66 @@ debtExtraInput.addEventListener("input", () => {
   saveState();
 });
 
+// Data export / import / reset
+
+const exportBtn = document.getElementById("export-data");
+const importInput = document.getElementById("import-file");
+const resetBtn = document.getElementById("reset-data");
+
+if (exportBtn) {
+  exportBtn.addEventListener("click", () => {
+    try {
+      const json = JSON.stringify(state, null, 2);
+      const blob = new Blob([json], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "budgetbloom-data.json";
+
+      // Helps on iOS / PWAs
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Export error", err);
+      alert("Sorry, something went wrong exporting your data.");
+    }
+  });
+}
+
+if (importInput) {
+  importInput.addEventListener("change", ev => {
+    const file = ev.target.files && ev.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const imported = JSON.parse(e.target.result);
+        state = Object.assign(structuredClone(defaultState), imported);
+        saveState();
+        location.reload();
+      } catch (err) {
+        console.error("Import error", err);
+        alert("Could not import file. Please ensure it's a valid BudgetBloom JSON export.");
+      }
+    };
+    reader.readAsText(file);
+  });
+}
+
+if (resetBtn) {
+  resetBtn.addEventListener("click", () => {
+    if (!confirm("This will clear all BudgetBloom data on this device. Continue?")) return;
+    localStorage.removeItem(STORAGE_KEY);
+    state = structuredClone(defaultState);
+    location.reload();
+  });
+}
+
 /* DASHBOARD & SUMMARY */
 
 function renderDashboard() {
